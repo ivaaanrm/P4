@@ -170,7 +170,14 @@ for cmd in $*; do
        #
        # El fichero con el resultado del reconocimiento debe llamarse $FINAL_CLASS, que deberá estar en el
        # directorio de la práctica (PAV/P4).
-       echo "To be implemented ..."
+
+       # parametrizar la señal
+        compute_$FEAT $db_test $lists/final/class.test
+
+
+        EXEC="gmm_classify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm $lists/gmm.list $lists/final/class.test"
+        echo $EXEC && $EXEC | tee $FINAL_CLASS || exit 1
+
    
    elif [[ $cmd == finalverif ]]; then
        ## @file
@@ -189,7 +196,8 @@ for cmd in $*; do
        # candidato para la señal a verificar. En $FINAL_VERIF se pide que la tercera columna sea 1,
        # si se considera al candidato legítimo, o 0, si se considera impostor. Las instrucciones para
        # realizar este cambio de formato están en el enunciado de la práctica.
-       echo "To be implemented ..."
+        compute_$FEAT $db_test $lists/final/class.test
+        
    
    # If the command is not recognize, check if it is the name
    # of a feature and a compute_$FEAT function exists.
