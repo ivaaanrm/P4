@@ -56,7 +56,7 @@ $LPC -l 240 -m $lpc_order > $base.lp
 - Inserte una imagen mostrando la dependencia entre los coeficientes 2 y 3 de las tres parametrizaciones
   para todas las señales de un locutor.
 
- ![](images/plots_coefs.jpg "2nd vs 3r coefficients")
+> ![](images/plots_coefs.jpg "2nd vs 3r coefficients")
   
   + Indique **todas** las órdenes necesarias para obtener las gráficas a partir de las señales 
     parametrizadas.
@@ -80,9 +80,16 @@ Complete el código necesario para entrenar modelos GMM.
 - Inserte una gráfica que muestre la función de densidad de probabilidad modelada por el GMM de un locutor
   para sus dos primeros coeficientes de MFCC.
 
+  > ![alt](images/SES007.png)
+
 - Inserte una gráfica que permita comparar los modelos y poblaciones de dos locutores distintos (la gŕafica
   de la página 20 del enunciado puede servirle de referencia del resultado deseado). Analice la capacidad
   del modelado GMM para diferenciar las señales de uno y otro.
+
+  MFCC: 
+  |![](images/1.png)|![](images/2.png)|
+  |------------------------|:----:|
+  | ![](images/3.png)|![](images/4.png)|
 
 ### Reconocimiento del locutor.
 
@@ -90,6 +97,13 @@ Complete el código necesario para realizar reconociminto del locutor y optimice
 
 - Inserte una tabla con la tasa de error obtenida en el reconocimiento de los locutores de la base de datos
   SPEECON usando su mejor sistema de reconocimiento para los parámetros LP, LPCC y MFCC.
+
+
+  |                        | Tasa de error |
+  |------------------------|:----:|
+  | LP       | 8.79% |
+  | LPCC        | 0.64% |
+  | MFCC      | 14.52% |
 
 ### Verificación del locutor.
 

@@ -138,11 +138,13 @@ def plotGMM(fileGMM, xDim, yDim, percents, colorGmm, filesFeat=None, colorFeat=N
     CS = ax.contour(X, Y, Z, levels=levels, **style)
     fmt = {levels[i]: f'{percents[i]:.0%}' for i in range(len(levels))}
     ax.clabel(CS, inline=1, fontsize=14, fmt=fmt)
-
-    plt.title(f'Region coverage predicted by {fileGMM}')
+    s_gmm = fileGMM.split("/")[-1].split(".")[0]
+    s_feature = fileFeat.split("/")[-2]
+    plt.title(f'GMM: {s_gmm}, LOC: {s_feature}')
     plt.axis('tight')
     plt.axis(limits)
-    plt.show()
+    plt.savefig("images/lp_3.jpg")
+    # plt.show()
 
 
 ########################################################################################################
