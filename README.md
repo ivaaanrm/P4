@@ -42,11 +42,47 @@ $LPC -l 240 -m $lpc_order > $base.lp
 
 - Explique el procedimiento seguido para obtener un fichero de formato *fmatrix* a partir de los ficheros de
   salida de SPTK (líneas 45 a 51 del script `wav2lp.sh`).
+  1) Primero utilizamos sox para convertir el archivo de audio a formato raw, con encoding signed y un número de bits por muestra de 16.
+
+   <code>sox $inputfile -t raw -e signed -b 16</code>
+  
+  2) Después con x2x convertimos el archivo de audio de formato raw a formato float.
+  
+    <code>$x2x +sf</code>
+  
+  3) Después con frame dividimos el archivo de audio en tramas de 30ms con un desplazamiento de 10ms.
+
+    <code>$frame -l 240 -p 80</code>
+  
+  4) Después con window aplicamos una ventana de Blackman a cada una de las tramas.
+
+    <code>$window -l 240 -L 240</code>
+  
+  5) Después con LPC calculamos los primeros coeficientes de predicción lineal de cada una de las tramas.
+
+    <code>$lpc -m $lpc_order -l 240</code>
+  
+  6) Ahora se guarda el resultado en un fichero de formato fmatrix.
+
+  7) Por último se asignan el numero de filas y columnas del fichero fmatrix.
+
+    <code>ncol=$((lpc_order+1))</code>
+    <code>nrow=`$X2X +fa < $base.lp | wc -l | perl -ne 'print $_/'$ncol', "\n";'`</code>
 
   * ¿Por qué es más conveniente el formato *fmatrix* que el SPTK?
 
+    El formato fmatrix es más conveniente que el SPTK porque es más fácil de leer y manipular.
+
 - Escriba el *pipeline* principal usado para calcular los coeficientes cepstrales de predicción lineal
   (LPCC) en su fichero <code>scripts/wav2lpcc.sh</code>:
+
+  * El pipeline principal usado para calcular los coeficientes cepstrales de predicción lineal (LPCC) es el mismo que el usado para calcular los coeficientes de predicción lineal (LP), pero se añade un paso más para calcular los coeficientes cepstrales de predicción lineal (LPCC) entre el paso 5 y 6.
+
+  * Usamos el comando lpc2c para calcular los coeficientes cepstrales de predicción lineal (LPCC)
+
+    <code>$lpc2c -m $lpc_order -M $lpcc_order </code>
+
+    [-m m(order of LPC), -M M(order of LPCC)]
 
 - Escriba el *pipeline* principal usado para calcular los coeficientes cepstrales en escala Mel (MFCC) en su
   fichero <code>scripts/wav2mfcc.sh</code>:
