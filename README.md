@@ -42,14 +42,76 @@ $LPC -l 240 -m $lpc_order > $base.lp
 
 - Explique el procedimiento seguido para obtener un fichero de formato *fmatrix* a partir de los ficheros de
   salida de SPTK (líneas 45 a 51 del script `wav2lp.sh`).
+  1) Primero utilizamos sox para convertir el archivo de audio a formato raw, con encoding signed y un número de bits por muestra de 16.
+
+   <code>sox $inputfile -t raw -e signed -b 16</code>
+  
+  2) Después con x2x convertimos el archivo de audio de formato raw a formato float.
+  
+    <code>$x2x +sf</code>
+  
+  3) Después con frame dividimos el archivo de audio en tramas de 30ms con un desplazamiento de 10ms.
+
+    <code>$frame -l 240 -p 80</code>
+  
+  4) Después con window aplicamos una ventana de Blackman a cada una de las tramas.
+
+    <code>$window -l 240 -L 240</code>
+  
+  5) Después con LPC calculamos los primeros coeficientes de predicción lineal de cada una de las tramas.
+
+    <code>$lpc -m $lpc_order -l 240</code>
+  
+  6) Ahora se guarda el resultado en un fichero de formato fmatrix.
+
+  7) Por último se asignan el numero de filas y columnas del fichero fmatrix.
+
+    <code>ncol=$((lpc_order+1))</code>
+    <code>nrow=`$X2X +fa < $base.lp | wc -l | perl -ne 'print $_/'$ncol', "\n";'`</code>
 
   * ¿Por qué es más conveniente el formato *fmatrix* que el SPTK?
+
+    El formato fmatrix es más conveniente que el SPTK porque es más fácil de leer y manipular.
 
 - Escriba el *pipeline* principal usado para calcular los coeficientes cepstrales de predicción lineal
   (LPCC) en su fichero <code>scripts/wav2lpcc.sh</code>:
 
+  ```sh
+  # Main command for feature extration
+  sox $inputfile -t raw -e signed -b 16 - | $X2X +sf | $FRAME -l 240 -p 80 | $WINDOW -l 240 -L 240 |
+	$LPC -l 240 -m $lpc_order |$LPCC -m $lpc_order -M $lpcc_order > $base.lp   
+
+  # Our array files need a header with the number of cols and rows:
+  ncol=$((lpcc_order+1))
+  nrow=$($X2X +fa < $base.lp | wc -l | perl -ne 'print $_/'$ncol', "\n";')
+  ```
+
+  * El pipeline principal usado para calcular los coeficientes cepstrales de predicción lineal (LPCC) es el mismo que el usado para calcular los coeficientes de predicción lineal (LP), pero se añade un paso más para calcular los coeficientes cepstrales de predicción lineal (LPCC) entre el paso 5 y 6.
+
+  * Usamos el comando lpc2c para calcular los coeficientes cepstrales de predicción lineal (LPCC)
+
+    <code>$lpc2c -m $lpc_order -M $lpcc_order </code>
+
+    [-m m(order of LPC), -M M(order of LPCC)]
+
 - Escriba el *pipeline* principal usado para calcular los coeficientes cepstrales en escala Mel (MFCC) en su
   fichero <code>scripts/wav2mfcc.sh</code>:
+
+  ```sh
+  # Main command for feature extration
+  sox $inputfile -t raw -e signed -b 16 - | $X2X +sf | $FRAME -l 240 -p 80 | $WINDOW -l 240 -L 240 |
+	$MFCC -l 240 -s 8 -w 0 -m $mfcc_order -n $mel_filter_bank_order > $base.mfcc
+
+  # Our array files need a header with the number of cols and rows:
+  ncol=$((mfcc_order+1))
+  nrow=`$X2X +fa < $base.mfcc | wc -l | perl -ne 'print $_/'$ncol', "\n";'`
+  ```
+
+  * El pipeline principal usado para calcular los coeficientes cepstrales en escala Mel (MFCC) es el mismo que el usado para calcular los coeficientes de predicción lineal (LP), pero el paso 5 se sustituye por el comando mfcc para calcular los coeficientes cepstrales en escala Mel (MFCC).
+
+    <code>$MFCC -l 240 -s 8 -w 0 -m $mfcc_order -n $mel_filter_bank_order </code>
+
+    [-l l(frame length), -s s(sampling frequency), -w w(window type), -m m(order of MFCC), -n n(order of mel filter bank)]
 
 ### Extracción de características.
 
@@ -60,18 +122,42 @@ $LPC -l 240 -m $lpc_order > $base.lp
   
   + Indique **todas** las órdenes necesarias para obtener las gráficas a partir de las señales 
     parametrizadas.
+
+    ```sh
+    fmatrix_show work/lp/BLOCK00/SES000/*.lp | egrep '^\[' | cut -f4,5 > lp_2_3.txt
+    fmatrix_show work/lpcc/BLOCK00/SES000/*.lpcc | egrep '^\[' | cut -f4,5 > lpcc_2_3.txt
+    fmatrix_show work/mfcc/BLOCK00/SES000/*.mfcc | egrep '^\[' | cut -f4,5 > mfcc_2_3.txt
+    ```
+    Nos quedamos con las columnas 4 y 5 de los ficheros lp, lpcc y mfcc, que son las que contienen los coeficientes 2 y 3.
+    Luego, con [python](plot_coefs.py), creamos las graficas a partir de los ficheros creados anteriormente.
+    
   + ¿Cuál de ellas le parece que contiene más información?
+  
+      La parametrización LPCC contiene más información que las otras dos, ya que los coeficientes 2 y 3 están más dispersos que en las otras dos parametrizaciones.
 
 - Usando el programa <code>pearson</code>, obtenga los coeficientes de correlación normalizada entre los
   parámetros 2 y 3 para un locutor, y rellene la tabla siguiente con los valores obtenidos.
 
   |                        | LP   | LPCC | MFCC |
   |------------------------|:----:|:----:|:----:|
-  | &rho;<sub>x</sub>[2,3] |      |      |      |
+  | &rho;<sub>x</sub>[2,3] | -0.809485 | 0.198087 | 0.0994889 |
+
+  ```sh
+  export FEAT=lp; pearson work/$FEAT/BLOCK00/SES000/* | grep "rho\[2\]\[3\]"
+  export FEAT=lpcc; pearson work/$FEAT/BLOCK00/SES000/* | grep "rho\[2\]\[3\]"
+  export FEAT=mfcc; pearson work/$FEAT/BLOCK00/SES000/* | grep "rho\[2\]\[3\]"
+  ```
   
   + Compare los resultados de <code>pearson</code> con los obtenidos gráficamente.
   
+      Los resultados de pearson son muy similares a los obtenidos gráficamente, ya que los coeficientes 2 y 3 están muy correlacionados en todas las parametrizaciones.
+
+  
 - Según la teoría, ¿qué parámetros considera adecuados para el cálculo de los coeficientes LPCC y MFCC?
+
+  + LPCC: El parámetro adecuado para el cálculo de los coeficientes LPCC es el orden de los coeficientes de predicción lineal (LP), ya que es el parámetro que más afecta a la parametrización LPCC.
+  
+  + MFCC: El parámetro adecuado para el cálculo de los coeficientes MFCC es el orden de los coeficientes cepstrales en escala Mel (MFCC), ya que es el parámetro que más afecta a la parametrización MFCC.
 
 ### Entrenamiento y visualización de los GMM.
 
