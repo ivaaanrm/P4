@@ -143,8 +143,8 @@ def plotGMM(fileGMM, xDim, yDim, percents, colorGmm, filesFeat=None, colorFeat=N
     plt.title(f'GMM: {s_gmm}, LOC: {s_feature}')
     plt.axis('tight')
     plt.axis(limits)
-    plt.savefig("images/lp_3.jpg")
-    # plt.show()
+    plt.savefig("images/lpcc_3.jpg")
+    plt.show()
 
 
 ########################################################################################################

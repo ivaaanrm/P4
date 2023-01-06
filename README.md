@@ -15,7 +15,7 @@ que los ficheros entregados deberán estar en condiciones de ser ejecutados con 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~.sh
   make release
-  run_spkid mfcc train test classerr verify verifyerr
+  run_spkid lpcc train test classerr verify verifyerr
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Recuerde que, además de los trabajos indicados en esta parte básica, también deberá realizar un proyecto
@@ -171,11 +171,23 @@ Complete el código necesario para entrenar modelos GMM.
 - Inserte una gráfica que permita comparar los modelos y poblaciones de dos locutores distintos (la gŕafica
   de la página 20 del enunciado puede servirle de referencia del resultado deseado). Analice la capacidad
   del modelado GMM para diferenciar las señales de uno y otro.
+  
+  LP: 
+   |![](images/lp_1.jpg)|![](images/lp_2.jpg)|
+  |------------------------|:----:|
+  | ![](images/lp_3.jpg)|![](images/lp_4.jpg)|
 
+  LPCC: 
+   |![](images/lpcc_1.jpg)|![](images/lpcc_2.jpg)|
+  |------------------------|:----:|
+  | ![](images/lpcc_3.jpg)|![](images/lpcc_4.jpg)|
+  
   MFCC: 
   |![](images/1.png)|![](images/2.png)|
   |------------------------|:----:|
   | ![](images/3.png)|![](images/4.png)|
+
+
 
 ### Reconocimiento del locutor.
 
@@ -199,11 +211,30 @@ Complete el código necesario para realizar verificación del locutor y optimice
   de verificación de SPEECON. La tabla debe incluir el umbral óptimo, el número de falsas alarmas y de
   pérdidas, y el score obtenido usando la parametrización que mejor resultado le hubiera dado en la tarea
   de reconocimiento.
+
+    |                        | Coste Detección |
+  |------------------------|:----:|
+  | LP       | 57.3 |
+  | LPCC        | 3.2 |
+  | MFCC      |  |
  
+   |           mejor sistema             | LPCC |
+  |------------------------|:----:|
+  | Umbral       | 0.4489 |
+  | Falsas Alarmas        | 0 |
+  | Pérdidas      | 8 |
+  | Score     | 3.2 |
+
+
+  ![](images/Captura%20de%20Pantalla%202023-01-02%20a%20las%2020.53.52.png)
 ### Test final
 
 - Adjunte, en el repositorio de la práctica, los ficheros `class_test.log` y `verif_test.log` 
   correspondientes a la evaluación *ciega* final.
+
+  - [class_test.log](work/class_test.log)
+  - [verif_test.log](work/verif_test.log)
+
 
 ### Trabajo de ampliación.
 

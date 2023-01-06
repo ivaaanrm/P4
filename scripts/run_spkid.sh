@@ -19,13 +19,13 @@ set -o pipefail
 # - db_test:  directory of the database used in the final test
 lists=lists
 w=work
-name_exp=one
+name_exp=1
 db_devel=spk_8mu/speecon
 db_test=spk_8mu/sr_test
+world=others
 
 
-WORLD_OPTS="-T 1.e-6 -N 64 -m 32"
-TRAIN_OPTS="-T 0.001 -N 64 -m 32 -i 2"
+
 
 # Ficheros de resultados del reconocimiento y verificación
 LOG_CLASS=$w/class_${FEAT}_${name_exp}.log
@@ -80,12 +80,14 @@ fi
 # Create your own features with the name compute_$FEAT(), where $FEAT is the name of the feature.
 # - Select (or change) different features, options, etc. Make you best choice and try several options.
 
+
+
 compute_lp() {
     db=$1
     shift
     for filename in $(sort $*); do
         mkdir -p `dirname $w/$FEAT/$filename.$FEAT`
-        EXEC="wav2lp 25 $db/$filename.wav $w/$FEAT/$filename.$FEAT"
+        EXEC="wav2lp 30 $db/$filename.wav $w/$FEAT/$filename.$FEAT"
         echo $EXEC && $EXEC || exit 1
     done
 }
@@ -105,7 +107,7 @@ compute_mfcc() {
     shift
     for filename in $(sort $*); do
         mkdir -p `dirname $w/$FEAT/$filename.$FEAT`
-        EXEC="wav2mfcc 20 33 $db/$filename.wav $w/$FEAT/$filename.$FEAT"
+        EXEC="wav2mfcc 22 32 $db/$filename.wav $w/$FEAT/$filename.$FEAT"
         echo $EXEC && $EXEC || exit 1
     done
 }
@@ -113,6 +115,7 @@ compute_mfcc() {
 #  Set the name of the feature (not needed for feature extraction itself)
 if [[ ! -n "$FEAT" && $# > 0 && "$(type -t compute_$1)" = function ]]; then
     FEAT=$1
+    echo ----------------- $FEAT
 elif [[ ! -n "$FEAT" ]]; then
     echo "Variable FEAT not set. Please rerun with FEAT set to the desired feature."
     echo
@@ -126,6 +129,9 @@ fi
 # Main program: 
 # For each cmd in command line ...
 # ---------------------------------
+
+WORLD_OPTS="-T 0.00001 -N 64 -m 30 -i 1"
+TRAIN_OPTS="-T 0.0001 -N 64 -m 30 -i 2"
 
 for cmd in $*; do
    echo `date`: $cmd '---';
@@ -143,19 +149,19 @@ for cmd in $*; do
        done
    elif [[ $cmd == test ]]; then
         EXEC="gmm_classify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm $lists/gmm.list $lists/class/all.test"
-        echo $EXEC && $EXEC | tee $LOG_CLASS || exit 1
+        echo $EXEC && $EXEC | tee $w/class_${FEAT}_${name_exp}.log || exit 1
 
    elif [[ $cmd == classerr ]]; then
-       if [[ ! -s $LOG_CLASS ]] ; then
-          echo "ERROR: $LOG_CLASS does not exist"
-          exit 1
+       if [[ ! -s $w/class_${FEAT}_${name_exp}.log ]] ; then
+          echo "ERROR: ${w}/class_${FEAT}_${name_exp}.log does not exist"
+          exit 1s
        fi
        # Count errors
        perl -ne 'BEGIN {$ok=0; $err=0}
                  next unless /^.*SA(...).*SES(...).*$/; 
                  if ($1 == $2) {$ok++}
                  else {$err++}
-                 END {printf "nerr=%d\tntot=%d\terror_rate=%.2f%%\n", ($err, $ok+$err, 100*$err/($ok+$err))}' $LOG_CLASS | tee -a $LOG_CLASS
+                 END {printf "nerr=%d\tntot=%d\terror_rate=%.2f%%\n", ($err, $ok+$err, 100*$err/($ok+$err))}' $w/class_${FEAT}_${name_exp}.log | tee -a $w/class_${FEAT}_${name_exp}.log
 
    elif [[ $cmd == trainworld ]]; then
        ## @file
@@ -179,13 +185,14 @@ for cmd in $*; do
 
 
    elif [[ $cmd == verifyerr ]]; then
-       if [[ ! -s $LOG_VERIF ]] ; then
-          echo "ERROR: $LOG_VERIF not created"
+       if [[ ! -s $w/verif_${FEAT}_${name_exp}.log ]] ; then
+          echo "ERROR: $w/verif_${FEAT}_${name_exp}.log not created"
           exit 1
        fi
        # You can pass the threshold to spk_verif_score.pl or it computes the
        # best one for these particular results.
-       spk_verif_score $LOG_VERIF | tee $LOG_VERIF
+    #    spk_verif_score $LOG_VERIF | tee $LOG_VERIF
+       spk_verif_score $w/verif_${FEAT}_${name_exp}.log
 
    elif [[ $cmd == finalclass ]]; then
        ## @file
@@ -222,7 +229,7 @@ for cmd in $*; do
        # candidato para la señal a verificar. En $FINAL_VERIF se pide que la tercera columna sea 1,
        # si se considera al candidato legítimo, o 0, si se considera impostor. Las instrucciones para
        # realizar este cambio de formato están en el enunciado de la práctica.
-        compute_$FEAT $db_test $lists/final/class.test
+        compute_$FEAT $db_test $lists/final/verif.test
         gmm_verify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm -w $world lists/final/verif.users lists/final/verif.test lists/final/verif.test.candidates | tee $w/verif_test.log
         
    
