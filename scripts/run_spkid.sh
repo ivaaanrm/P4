@@ -107,7 +107,7 @@ compute_mfcc() {
     shift
     for filename in $(sort $*); do
         mkdir -p `dirname $w/$FEAT/$filename.$FEAT`
-        EXEC="wav2mfcc 22 32 $db/$filename.wav $w/$FEAT/$filename.$FEAT"
+        EXEC="wav2mfcc 20 32 $db/$filename.wav $w/$FEAT/$filename.$FEAT"
         echo $EXEC && $EXEC || exit 1
     done
 }
@@ -132,6 +132,11 @@ fi
 
 WORLD_OPTS="-T 0.00001 -N 64 -m 30 -i 1"
 TRAIN_OPTS="-T 0.0001 -N 64 -m 30 -i 2"
+
+# WORLD_OPTS="-T 0.00001 -N 64 -m 30 -i 1"
+# # WORLD_OPTS="-T 1 -N 96 -m 32 -i 1"
+# TRAIN_OPTS="-T 1.e-5 -N 64 -m 30 -i 2"
+# TRAIN_OPTS="-T 0.0001 -N 64 -m 30 -i 2"
 
 for cmd in $*; do
    echo `date`: $cmd '---';
