@@ -201,7 +201,7 @@ Complete el código necesario para realizar reconociminto del locutor y optimice
   |------------------------|:----:|
   | LP       | 8.79% |
   | LPCC        | 0.64% |
-  | MFCC      | 14.52% |
+  | MFCC      | 16.56% |
 
 ### Verificación del locutor.
 
@@ -216,11 +216,11 @@ Complete el código necesario para realizar verificación del locutor y optimice
   |------------------------|:----:|
   | LP       | 57.3 |
   | LPCC        | 3.2 |
-  | MFCC      |  |
+  | MFCC      | 69.2 |
  
    |           mejor sistema             | LPCC |
   |------------------------|:----:|
-  | Umbral       | 0.4489 |
+  | Umbral       | 0.206223282487504 |
   | Falsas Alarmas        | 0 |
   | Pérdidas      | 8 |
   | Score     | 3.2 |
