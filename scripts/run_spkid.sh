@@ -19,7 +19,7 @@ set -o pipefail
 # - db_test:  directory of the database used in the final test
 lists=lists
 w=work
-name_exp=1
+name_exp=others
 db_devel=spk_8mu/speecon
 db_test=spk_8mu/sr_test
 world=others
@@ -186,18 +186,20 @@ for cmd in $*; do
        #   For instance:
        #   * <code> gmm_verify ... > $LOG_VERIF </code>
        #   * <code> gmm_verify ... | tee $LOG_VERIF </code>
-        gmm_verify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm -w $world lists/gmm.list lists/verif/all.test lists/verif/all.test.candidates | tee $w/verif_${FEAT}_${name_exp}.log
+        # gmm_verify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm -w $world lists/gmm.list lists/verif/all.test lists/verif/all.test.candidates | tee $w/verif_${FEAT}_${name_exp}.log
+        EXEC="gmm_verify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm -w $world $lists/gmm.list $lists/verif/all.test $lists/verif/all.test.candidates"
+        echo $EXEC && $EXEC | tee $TEMP_VERIF || exit 1
 
 
    elif [[ $cmd == verifyerr ]]; then
-       if [[ ! -s $w/verif_${FEAT}_${name_exp}.log ]] ; then
-          echo "ERROR: $w/verif_${FEAT}_${name_exp}.log not created"
+       if [[ ! -s $TEMP_VERIF ]] ; then
+          echo "ERROR: $TEMP_VERIF not created"
           exit 1
        fi
        # You can pass the threshold to spk_verif_score.pl or it computes the
        # best one for these particular results.
-    #    spk_verif_score $LOG_VERIF | tee $LOG_VERIF
-       spk_verif_score $w/verif_${FEAT}_${name_exp}.log
+       spk_verif_score $TEMP_VERIF | tee $LOG_VERIF
+    #    spk_verif_score $w/verif_${FEAT}_${name_exp}.log
 
    elif [[ $cmd == finalclass ]]; then
        ## @file
@@ -211,8 +213,6 @@ for cmd in $*; do
 
        # parametrizar la señal
         compute_$FEAT $db_test $lists/final/class.test
-
-
         EXEC="gmm_classify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm $lists/gmm.list $lists/final/class.test"
         echo $EXEC && $EXEC | tee $FINAL_CLASS || exit 1
 
@@ -235,8 +235,17 @@ for cmd in $*; do
        # si se considera al candidato legítimo, o 0, si se considera impostor. Las instrucciones para
        # realizar este cambio de formato están en el enunciado de la práctica.
         compute_$FEAT $db_test $lists/final/verif.test
-        gmm_verify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm -w $world lists/final/verif.users lists/final/verif.test lists/final/verif.test.candidates | tee $w/verif_test.log
-        
+        # gmm_verify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm -w $world lists/final/verif.users lists/final/verif.test lists/final/verif.test.candidates | tee $w/verif_test.log
+        # gmm_verify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm -w $world lists/final/verif.users lists/final/verif.test lists/final/verif.test.candidates 
+        # echo $EXEC && $EXEC | tee $TEMP_VERIF || exit 1
+
+        EXEC="gmm_verify -d $w/$FEAT -e $FEAT -D $w/gmm/$FEAT -E gmm -w $world $lists/gmm.list $lists/final/verif.test $lists/final/verif.test.candidates"
+        echo $EXEC && $EXEC | tee $TEMP_VERIF || exit 1
+
+        perl -ane 'print "$F[0]\t$F[1]\t";
+        if ($F[2] > 0.206223282487504) {print "1\n"}
+        else {print "0\n"}' $TEMP_VERIF | tee $FINAL_VERIF
+
    
    # If the command is not recognize, check if it is the name
    # of a feature and a compute_$FEAT function exists.

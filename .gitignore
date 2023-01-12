@@ -1,6 +1,5 @@
-
 spk_8mu/
-lp/
+work/lp
 lpcc/
 mfcc/
 gmm/
@@ -12,6 +11,6 @@ __MAC*
 *bak
 
 !src/gmm
-
+lp/
 
 venv
