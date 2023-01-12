@@ -220,13 +220,18 @@ Complete el código necesario para realizar verificación del locutor y optimice
  
    |           mejor sistema             | LPCC |
   |------------------------|:----:|
-  | Umbral       | 0.206223282487504 |
+  | Umbral       | 0.449 |
   | Falsas Alarmas        | 0 |
   | Pérdidas      | 8 |
   | Score     | 3.2 |
 
+others
 
   ![](images/Captura%20de%20Pantalla%202023-01-02%20a%20las%2020.53.52.png)
+
+users
+
+  ![](images/users_score.png)
 ### Test final
 
 - Adjunte, en el repositorio de la práctica, los ficheros `class_test.log` y `verif_test.log` 
